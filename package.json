@@ -9,11 +9,13 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@prisma/client": "^5.16.1",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
     "firebase": "^10.12.3",
     "firebase-admin": "^12.2.0",
     "mongoose": "^8.4.4",
+    "mysql2": "^3.10.2",
     "nodemailer": "^6.9.14"
   }
 }

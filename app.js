@@ -3,12 +3,11 @@ if (process.env.NODE_ENV !== "production") {
 }
 const express = require("express");
 const { referrerSendMail, refreeSendMail } = require("./mail");
-const SessionData = require("./model");
 const mongoose = require("mongoose")
 const app = express();
 const port = 8080;
 const { messageSend } = require("./firebase");
-
+const connection = require("./model")
 app.use(express.json());
 app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
@@ -28,25 +27,49 @@ app.listen(port, (req, res) => {
 });
 
 
+const insertSessionData = async (sessionData) => {
+  const { referrerName, referrerEmail, refreeName, refreeEmail, course } =
+    sessionData;
 
-async function main() {
-  await mongoose.connect(process.env.MONGOURL, { serverSelectionTimeoutMS: 30000 });
-}
-main()
-  .then((res) => {
-    console.log("Connection Sucessfull !");
-  })
-  .catch((err) => {
-    console.log(err);
-  });
+  try {
+    const query = `
+      INSERT INTO session_data (referrer_name, referrer_email, refree_name, refree_email, course)
+      VALUES (?, ?, ?, ?, ?)
+    `;
+    await connection.query(query, [
+      referrerName,
+      referrerEmail,
+      refreeName,
+      refreeEmail,
+      course,
+    ]);
+    console.log("Data inserted successfully");
+  } catch (error) {
+    console.error("Error inserting data:", error);
+  }
+};
+
 
 app.post("/getdata", async(req, res) => {
   let { data } = req.body;
-  await  referrerSendMail(data.referrerName, data.referrerEmail,data.refreeName,data.course);
-    await refreeSendMail(data.refreeName, data.refreeEmail, data.referrerName,data.course);
-    const session = new SessionData(data);
-  await session.save();
-    console.log("Credentials saved successfully !")
+  console.log(data)
+  await referrerSendMail(
+    data.referrerName,
+    data.referrerEmail,
+    data.refreeName,
+    data.course
+  );
+  await refreeSendMail(
+    data.refreeName,
+    data.refreeEmail,
+    data.referrerName,
+    data.course
+  );
+
+  // insertSessionData(data);
+ 
+  console.log("Credentials saved successfully !");
+
 });
 app.post("/getToken", async (req,res) => {
   let { token } = req.body;
